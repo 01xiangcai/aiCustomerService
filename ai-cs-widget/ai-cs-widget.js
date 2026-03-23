@@ -6,67 +6,70 @@
  * <script>AiCS.init({ appKey: 'your-app-key' })</script>
  */
 ; (function () {
-    'use strict';
+  'use strict';
 
-    // ==================== 默认配置 ====================
-    const DEFAULT_CONFIG = {
-        appKey: '',
-        serverUrl: '',
-        themeColor: '#6366f1',
-        position: 'bottom-right',
-        welcomeMsg: '你好！我是 AI 智能客服，有什么可以帮助你的？',
-        placeholder: '输入你的问题...',
-        title: 'AI 智能客服',
-        width: 380,
-        height: 560,
-        bubbleSize: 56
-    };
+  // ==================== 默认配置 ====================
+  const DEFAULT_CONFIG = {
+    appKey: '',
+    serverUrl: '',
+    themeColor: '#6366f1',
+    position: 'bottom-right',
+    welcomeMsg: '你好！我是 AI 智能客服，有什么可以帮助你的？',
+    placeholder: '输入你的问题...',
+    title: 'AI 智能客服',
+    width: 380,
+    height: 560,
+    bubbleSize: 56
+  };
 
-    let config = {};
-    let isOpen = false;
-    let sessionId = '';
-    let messages = [];
+  let config = {};
+  let isOpen = false;
+  let sessionId = '';
+  let messages = [];
 
-    // ==================== 初始化 ====================
-    function init(userConfig) {
-        config = Object.assign({}, DEFAULT_CONFIG, userConfig);
+  // ==================== 初始化 ====================
+  function init(userConfig) {
+    config = Object.assign({}, DEFAULT_CONFIG, userConfig);
 
-        if (!config.appKey) {
-            console.error('[AiCS] appKey 是必填项');
-            return;
-        }
-
-        // 自动检测 serverUrl
-        if (!config.serverUrl) {
-            const scriptEl = document.querySelector('script[src*="widget"]');
-            if (scriptEl) {
-                const url = new URL(scriptEl.src);
-                config.serverUrl = url.origin;
-            } else {
-                config.serverUrl = window.location.origin;
-            }
-        }
-
-        // 生成会话 ID
-        sessionId = 'ws_' + Math.random().toString(36).substring(2, 15);
-
-        // 注入样式和 DOM
-        injectStyles();
-        createWidget();
-
-        // 添加欢迎消息
-        if (config.welcomeMsg) {
-            messages.push({ role: 'assistant', content: config.welcomeMsg });
-        }
-
-        console.log('[AiCS] Widget 初始化完成');
+    if (!config.appKey) {
+      console.error('[AiCS] appKey 是必填项');
+      return;
     }
 
-    // ==================== 注入样式 ====================
-    function injectStyles() {
-        const style = document.createElement('style');
-        style.id = 'aics-widget-styles';
-        style.textContent = `
+    // 自动检测 serverUrl
+    if (!config.serverUrl) {
+      const scriptEl = document.querySelector('script[src*="widget"]');
+      if (scriptEl) {
+        const url = new URL(scriptEl.src);
+        config.serverUrl = url.origin;
+      } else {
+        config.serverUrl = window.location.origin;
+      }
+    }
+
+    // 从 localStorage 复用或新建会话 ID，以 appKey 区分不同机器人
+    const storageKey = 'aics_session_' + config.appKey;
+    sessionId = localStorage.getItem(storageKey);
+    if (!sessionId) {
+      sessionId = 'ws_' + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem(storageKey, sessionId);
+    }
+
+    // 注入样式和 DOM
+    injectStyles();
+    createWidget();
+
+    // 从后端加载历史消息，没有历史则显示欢迎语
+    loadHistory();
+
+    console.log('[AiCS] Widget 初始化完成，sessionId=' + sessionId);
+  }
+
+  // ==================== 注入样式 ====================
+  function injectStyles() {
+    const style = document.createElement('style');
+    style.id = 'aics-widget-styles';
+    style.textContent = `
       /* 气泡按钮 */
       #aics-bubble {
         position: fixed;
@@ -300,22 +303,22 @@
         border-top: 1px solid #f1f5f9;
       }
     `;
-        document.head.appendChild(style);
-    }
+    document.head.appendChild(style);
+  }
 
-    // ==================== 创建 DOM ====================
-    function createWidget() {
-        // 气泡按钮
-        const bubble = document.createElement('button');
-        bubble.id = 'aics-bubble';
-        bubble.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
-        bubble.onclick = toggleChat;
-        document.body.appendChild(bubble);
+  // ==================== 创建 DOM ====================
+  function createWidget() {
+    // 气泡按钮
+    const bubble = document.createElement('button');
+    bubble.id = 'aics-bubble';
+    bubble.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+    bubble.onclick = toggleChat;
+    document.body.appendChild(bubble);
 
-        // 对话窗口
-        const chat = document.createElement('div');
-        chat.id = 'aics-chat';
-        chat.innerHTML = `
+    // 对话窗口
+    const chat = document.createElement('div');
+    chat.id = 'aics-chat';
+    chat.innerHTML = `
       <div class="aics-header">
         <div class="aics-header-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
@@ -332,150 +335,175 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
         </button>
       </div>
-      <div class="aics-powered">Powered by AI 客服中间件</div>
+      <div class="aics-powered">Powered by AI 一二智能客服</div>
     `;
-        document.body.appendChild(chat);
+    document.body.appendChild(chat);
 
-        // 绑定事件
-        document.getElementById('aics-send').onclick = sendMessage;
-        document.getElementById('aics-input').addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+    // 绑定事件
+    document.getElementById('aics-send').onclick = sendMessage;
+    document.getElementById('aics-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
 
-        // 自动调整输入框高度
-        document.getElementById('aics-input').addEventListener('input', function () {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 80) + 'px';
-        });
+    // 自动调整输入框高度
+    document.getElementById('aics-input').addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+    });
 
-        // 渲染初始消息
-        renderMessages();
-    }
+    // 渲染初始消息
+    renderMessages();
+  }
 
-    // ==================== 切换窗口 ====================
-    function toggleChat() {
-        isOpen = !isOpen;
-        document.getElementById('aics-chat').classList.toggle('open', isOpen);
-        document.getElementById('aics-bubble').classList.toggle('open', isOpen);
-        if (isOpen) {
-            setTimeout(() => document.getElementById('aics-input')?.focus(), 350);
+  // ==================== 加载历史消息 ====================
+  async function loadHistory() {
+    try {
+      const res = await fetch(
+        `${config.serverUrl}/open/chat/${config.appKey}/history?sessionId=${encodeURIComponent(sessionId)}&limit=50`
+      );
+      const result = await res.json();
+      if (result.data && result.data.length > 0) {
+        // 有历史消息，直接展示历史
+        messages = result.data.map(m => ({ role: m.role, content: m.content }));
+      } else {
+        // 无历史消息，展示欢迎语
+        if (config.welcomeMsg) {
+          messages = [{ role: 'assistant', content: config.welcomeMsg }];
         }
+      }
+    } catch (e) {
+      // 网络失败时也显示欢迎语
+      if (config.welcomeMsg) {
+        messages = [{ role: 'assistant', content: config.welcomeMsg }];
+      }
     }
+    renderMessages();
+  }
 
-    // ==================== 发送消息 ====================
-    async function sendMessage() {
-        const input = document.getElementById('aics-input');
-        const text = input.value.trim();
-        if (!text) return;
-
-        // 添加用户消息
-        messages.push({ role: 'user', content: text });
-        input.value = '';
-        input.style.height = 'auto';
-        renderMessages();
-
-        // 显示 typing 指示器
-        showTyping(true);
-
-        // 禁用发送按钮
-        const sendBtn = document.getElementById('aics-send');
-        sendBtn.disabled = true;
-
-        try {
-            const response = await fetch(`${config.serverUrl}/open/chat/${config.appKey}/message`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: text,
-                    sessionId: sessionId,
-                    userId: 'widget_user'
-                })
-            });
-
-            const result = await response.json();
-            showTyping(false);
-
-            if (result.data) {
-                messages.push({ role: 'assistant', content: result.data });
-            } else {
-                messages.push({ role: 'assistant', content: '抱歉，我暂时无法回复。' });
-            }
-        } catch (err) {
-            showTyping(false);
-            messages.push({ role: 'assistant', content: '网络异常，请稍后再试。' });
-            console.error('[AiCS]', err);
-        } finally {
-            sendBtn.disabled = false;
-            renderMessages();
-        }
+  // ==================== 切换窗口 ====================
+  function toggleChat() {
+    isOpen = !isOpen;
+    document.getElementById('aics-chat').classList.toggle('open', isOpen);
+    document.getElementById('aics-bubble').classList.toggle('open', isOpen);
+    if (isOpen) {
+      setTimeout(() => document.getElementById('aics-input')?.focus(), 350);
     }
+  }
 
-    // ==================== 渲染消息 ====================
-    function renderMessages() {
-        const container = document.getElementById('aics-messages');
-        if (!container) return;
+  // ==================== 发送消息 ====================
+  async function sendMessage() {
+    const input = document.getElementById('aics-input');
+    const text = input.value.trim();
+    if (!text) return;
 
-        container.innerHTML = messages.map(msg => `
+    // 添加用户消息
+    messages.push({ role: 'user', content: text });
+    input.value = '';
+    input.style.height = 'auto';
+    renderMessages();
+
+    // 显示 typing 指示器
+    showTyping(true);
+
+    // 禁用发送按钮
+    const sendBtn = document.getElementById('aics-send');
+    sendBtn.disabled = true;
+
+    try {
+      const response = await fetch(`${config.serverUrl}/open/chat/${config.appKey}/message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          sessionId: sessionId,
+          userId: 'widget_user'
+        })
+      });
+
+      const result = await response.json();
+      showTyping(false);
+
+      if (result.data) {
+        messages.push({ role: 'assistant', content: result.data });
+      } else {
+        messages.push({ role: 'assistant', content: '抱歉，我暂时无法回复。' });
+      }
+    } catch (err) {
+      showTyping(false);
+      messages.push({ role: 'assistant', content: '网络异常，请稍后再试。' });
+      console.error('[AiCS]', err);
+    } finally {
+      sendBtn.disabled = false;
+      renderMessages();
+    }
+  }
+
+  // ==================== 渲染消息 ====================
+  function renderMessages() {
+    const container = document.getElementById('aics-messages');
+    if (!container) return;
+
+    container.innerHTML = messages.map(msg => `
       <div class="aics-msg ${msg.role}">
         <div class="aics-msg-bubble">${escapeHtml(msg.content)}</div>
       </div>
     `).join('');
 
-        // 滚动到底部
-        requestAnimationFrame(() => {
-            container.scrollTop = container.scrollHeight;
-        });
-    }
+    // 滚动到底部
+    requestAnimationFrame(() => {
+      container.scrollTop = container.scrollHeight;
+    });
+  }
 
-    // ==================== Typing 动画 ====================
-    function showTyping(show) {
-        const container = document.getElementById('aics-messages');
-        const existing = container.querySelector('.aics-typing-wrapper');
-        if (existing) existing.remove();
+  // ==================== Typing 动画 ====================
+  function showTyping(show) {
+    const container = document.getElementById('aics-messages');
+    const existing = container.querySelector('.aics-typing-wrapper');
+    if (existing) existing.remove();
 
-        if (show) {
-            const typingEl = document.createElement('div');
-            typingEl.className = 'aics-msg assistant aics-typing-wrapper';
-            typingEl.innerHTML = `
+    if (show) {
+      const typingEl = document.createElement('div');
+      typingEl.className = 'aics-msg assistant aics-typing-wrapper';
+      typingEl.innerHTML = `
         <div class="aics-msg-bubble">
           <div class="aics-typing">
             <span></span><span></span><span></span>
           </div>
         </div>
       `;
-            container.appendChild(typingEl);
-            container.scrollTop = container.scrollHeight;
-        }
+      container.appendChild(typingEl);
+      container.scrollTop = container.scrollHeight;
     }
+  }
 
-    // ==================== 工具函数 ====================
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+  // ==================== 工具函数 ====================
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function adjustColor(hex, amount) {
+    hex = hex.replace('#', '');
+    const num = parseInt(hex, 16);
+    let r = Math.min(255, (num >> 16) + amount);
+    let g = Math.min(255, ((num >> 8) & 0x00FF) + amount);
+    let b = Math.min(255, (num & 0x0000FF) + amount);
+    return '#' + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
+  }
+
+  // ==================== 暴露全局 API ====================
+  window.AiCS = {
+    init: init,
+    open: function () { if (!isOpen) toggleChat(); },
+    close: function () { if (isOpen) toggleChat(); },
+    sendMessage: function (text) {
+      document.getElementById('aics-input').value = text;
+      sendMessage();
     }
-
-    function adjustColor(hex, amount) {
-        hex = hex.replace('#', '');
-        const num = parseInt(hex, 16);
-        let r = Math.min(255, (num >> 16) + amount);
-        let g = Math.min(255, ((num >> 8) & 0x00FF) + amount);
-        let b = Math.min(255, (num & 0x0000FF) + amount);
-        return '#' + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
-    }
-
-    // ==================== 暴露全局 API ====================
-    window.AiCS = {
-        init: init,
-        open: function () { if (!isOpen) toggleChat(); },
-        close: function () { if (isOpen) toggleChat(); },
-        sendMessage: function (text) {
-            document.getElementById('aics-input').value = text;
-            sendMessage();
-        }
-    };
+  };
 
 })();
