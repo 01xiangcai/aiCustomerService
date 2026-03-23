@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # MySQL - 业务主数据库
+  mysql:
+    image: mysql:8.0
+    container_name: aics-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ai_cs
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql
+
+  # Redis - 缓存与会话状态
+  redis:
+    image: redis:7-alpine
+    container_name: aics-redis
+    restart: always
+    command: redis-server --requirepass 123456
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./docker/redis/data:/data
+
+  # PostgreSQL + PGVector - 向量数据库（用于知识库 RAG）
+  pgvector:
+    image: ankane/pgvector:latest
+    container_name: aics-pgvector
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: ai_customer_service
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/pgvector/data:/var/lib/postgresql/data

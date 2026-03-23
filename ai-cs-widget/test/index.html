@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 客服 Widget 测试页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f8fafc, #eef2ff);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .demo-content {
+            text-align: center;
+            max-width: 600px;
+            padding: 60px 40px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        p {
+            font-size: 16px;
+            color: #64748b;
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .hint {
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            border-radius: 10px;
+            padding: 16px 20px;
+            font-size: 14px;
+            color: #4338ca;
+        }
+
+        code {
+            background: #e0e7ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="demo-content">
+        <h1>🤖 AI 客服 Widget 演示</h1>
+        <p>
+            点击右下角的聊天气泡，即可体验 AI 客服对话能力。<br>
+            本页面仅需两行代码即可嵌入 Widget。
+        </p>
+        <div class="hint">
+            💡 使用方式：在你的网页中添加<br>
+            <code>&lt;script src="ai-cs-widget.js"&gt;&lt;/script&gt;</code><br>
+            <code>&lt;script&gt;AiCS.init({ appKey: 'your-key' })&lt;/script&gt;</code>
+        </div>
+    </div>
+
+    <!-- 嵌入 Widget：就这两行代码 -->
+    <script src="../ai-cs-widget.js"></script>
+    <script>
+        AiCS.init({
+            appKey: 'ak_demo_test_key',
+            serverUrl: 'http://localhost:9900',
+            themeColor: '#6366f1',
+            title: 'AI 智能客服',
+            welcomeMsg: '你好！我是 AI 客服助手，有什么可以帮您的？'
+        });
+    </script>
+</body>
+
+</html>

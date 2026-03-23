@@ -1,0 +1,31 @@
+# AI Customer Service
+
+## 构建产物
+target/
+*.jar
+*.war
+
+## IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+## 系统
+.DS_Store
+Thumbs.db
+*.log
+
+## 环境变量
+.env
+
+## Node
+node_modules/
+dist/
+.nuxt/
+.output/
+
+## 上传文件
+uploads/
