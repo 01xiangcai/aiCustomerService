@@ -129,27 +129,27 @@ const handleLogout = () => {
   align-items: center;
   gap: 12px;
   padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .logo-icon {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  border-radius: 8px;
+  background: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--bg-main);
   flex-shrink: 0;
 }
 
 .logo-text {
-  color: #fff;
+  color: var(--text-primary);
   font-size: 18px;
   font-weight: 700;
   white-space: nowrap;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 .sidebar-nav {
@@ -165,8 +165,8 @@ const handleLogout = () => {
   align-items: center;
   gap: 12px;
   padding: 11px 16px;
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.6);
+  border-radius: 6px;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: var(--transition);
   white-space: nowrap;
@@ -175,18 +175,18 @@ const handleLogout = () => {
 
 .nav-item:hover {
   background: var(--bg-sidebar-hover);
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text-primary);
 }
 
 .nav-item.active {
   background: var(--primary);
-  color: #fff;
+  color: var(--bg-main);
   font-weight: 500;
 }
 
 .sidebar-footer {
   padding: 12px 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -209,7 +209,7 @@ const handleLogout = () => {
 
 .topbar {
   height: 60px;
-  background: var(--bg-card);
+  background: var(--bg-sidebar);
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -248,8 +248,8 @@ const handleLogout = () => {
 }
 
 .avatar {
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  color: white;
+  background: var(--primary);
+  color: var(--bg-main);
   font-weight: 600;
   cursor: pointer;
 }

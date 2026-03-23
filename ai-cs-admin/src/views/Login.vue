@@ -1,12 +1,7 @@
 <template>
   <div class="login-page">
-    <!-- 背景动效 -->
-    <div class="bg-gradient"></div>
-    <div class="bg-orbs">
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
-    </div>
+    <!-- 极简背景 -->
+    <div class="bg-abstract"></div>
 
     <!-- 登录卡片 -->
     <div class="login-card">
@@ -111,68 +106,31 @@ const handleLogin = async () => {
   justify-content: center;
   position: relative;
   overflow: hidden;
-  background: #0f0b2e;
+  background: var(--bg-main);
 }
 
-/* 背景渐变 */
-.bg-gradient {
+/* 极其素雅的点缀背景 */
+.bg-abstract {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #0f0b2e 0%, #1a1145 30%, #1e1b4b 60%, #0f172a 100%);
-}
-
-/* 动态光球 */
-.bg-orbs .orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  animation: float 8s ease-in-out infinite;
-}
-
-.orb-1 {
-  width: 400px;
-  height: 400px;
-  background: rgba(99, 102, 241, 0.15);
-  top: -100px;
-  right: -100px;
-  animation-delay: 0s;
-}
-
-.orb-2 {
-  width: 300px;
-  height: 300px;
-  background: rgba(139, 92, 246, 0.12);
-  bottom: -50px;
-  left: -50px;
-  animation-delay: -3s;
-}
-
-.orb-3 {
-  width: 200px;
-  height: 200px;
-  background: rgba(59, 130, 246, 0.1);
-  top: 50%;
-  left: 50%;
-  animation-delay: -5s;
-}
-
-@keyframes float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -30px) scale(1.05); }
-  66% { transform: translate(-20px, 20px) scale(0.95); }
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background-image: radial-gradient(circle at top right, var(--border-color) 0%, transparent 40%),
+                    radial-gradient(circle at bottom left, var(--border-color) 0%, transparent 40%);
+  opacity: 0.6;
 }
 
 /* 登录卡片 */
 .login-card {
   width: 420px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
   padding: 48px 40px;
   position: relative;
   z-index: 10;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .card-header {
@@ -183,61 +141,63 @@ const handleLogin = async () => {
 .card-header .logo-icon {
   width: 56px;
   height: 56px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 12px;
+  background: var(--primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--bg-main);
   margin-bottom: 16px;
 }
 
 .card-header h1 {
   font-size: 24px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--text-primary);
   margin-bottom: 6px;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
 }
 
 .card-header p {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .login-card :deep(.el-input__wrapper) {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   box-shadow: none;
-  color: #f1f5f9;
+  color: var(--text-primary);
+  transition: var(--transition);
 }
 
 .login-card :deep(.el-input__wrapper:hover),
 .login-card :deep(.el-input__wrapper.is-focus) {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-bg);
 }
 
 .login-card :deep(.el-input__inner) {
-  color: #f1f5f9;
+  color: var(--text-primary);
 }
 
 .login-card :deep(.el-input__inner::placeholder) {
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .login-card :deep(.el-input__prefix .el-icon) {
-  color: #64748b;
+  color: var(--text-secondary);
 }
 
 .login-btn {
   width: 100%;
   height: 46px;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: var(--primary);
+  color: var(--bg-main);
   border: none;
   margin-top: 8px;
   transition: all 0.3s ease;
@@ -245,23 +205,24 @@ const handleLogin = async () => {
 
 .login-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.35);
+  background: var(--primary-light);
+  box-shadow: var(--shadow-md);
 }
 
 .card-footer {
   text-align: center;
   margin-top: 24px;
   font-size: 14px;
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 .card-footer a {
-  color: #818cf8;
-  font-weight: 500;
+  color: var(--primary);
+  font-weight: 600;
   margin-left: 4px;
 }
 
 .card-footer a:hover {
-  color: #a5b4fc;
+  text-decoration: underline;
 }
 </style>

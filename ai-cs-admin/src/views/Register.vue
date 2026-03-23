@@ -1,10 +1,7 @@
 <template>
   <div class="login-page">
-    <div class="bg-gradient"></div>
-    <div class="bg-orbs">
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-    </div>
+    <!-- 极简背景 -->
+    <div class="bg-abstract"></div>
 
     <div class="login-card">
       <div class="card-header">
@@ -82,28 +79,25 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
-/* 复用 Login.vue 样式 */
-.login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: #0f0b2e; }
-.bg-gradient { position: absolute; inset: 0; background: linear-gradient(135deg, #0f0b2e, #1a1145 30%, #1e1b4b 60%, #0f172a); }
-.bg-orbs .orb { position: absolute; border-radius: 50%; filter: blur(80px); animation: float 8s ease-in-out infinite; }
-.orb-1 { width: 350px; height: 350px; background: rgba(139, 92, 246, 0.15); top: -80px; left: -60px; }
-.orb-2 { width: 280px; height: 280px; background: rgba(99, 102, 241, 0.12); bottom: -50px; right: -50px; animation-delay: -4s; }
-@keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(20px, -20px) scale(1.03); } }
+/* 复用 Login.vue 极简样式 */
+.login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; background: var(--bg-main); }
+.bg-abstract { position: absolute; top: 0; left: 0; right: 0; height: 100%; background-image: radial-gradient(circle at top right, var(--border-color) 0%, transparent 40%), radial-gradient(circle at bottom left, var(--border-color) 0%, transparent 40%); opacity: 0.6; }
 
-.login-card { width: 420px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 48px 40px; position: relative; z-index: 10; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); }
+.login-card { width: 420px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 48px 40px; position: relative; z-index: 10; box-shadow: var(--shadow-lg); }
 .card-header { text-align: center; margin-bottom: 32px; }
-.card-header .logo-icon { width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: inline-flex; align-items: center; justify-content: center; color: white; margin-bottom: 16px; }
-.card-header h1 { font-size: 24px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
-.card-header p { color: #94a3b8; font-size: 14px; }
+.card-header .logo-icon { width: 56px; height: 56px; border-radius: 12px; background: var(--primary); display: inline-flex; align-items: center; justify-content: center; color: var(--bg-main); margin-bottom: 16px; }
+.card-header h1 { font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; letter-spacing: -0.03em; }
+.card-header p { color: var(--text-secondary); font-size: 14px; }
 
-.login-card :deep(.el-input__wrapper) { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; box-shadow: none; }
-.login-card :deep(.el-input__wrapper:hover), .login-card :deep(.el-input__wrapper.is-focus) { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
-.login-card :deep(.el-input__inner) { color: #f1f5f9; }
-.login-card :deep(.el-input__inner::placeholder) { color: #64748b; }
-.login-card :deep(.el-input__prefix .el-icon) { color: #64748b; }
+.login-card :deep(.el-input__wrapper) { background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: none; color: var(--text-primary); transition: var(--transition); }
+.login-card :deep(.el-input__wrapper:hover), .login-card :deep(.el-input__wrapper.is-focus) { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-bg); }
+.login-card :deep(.el-input__inner) { color: var(--text-primary); }
+.login-card :deep(.el-input__inner::placeholder) { color: var(--text-muted); }
+.login-card :deep(.el-input__prefix .el-icon) { color: var(--text-secondary); }
 
-.login-btn { width: 100%; height: 46px; border-radius: 10px; font-size: 16px; font-weight: 600; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; margin-top: 8px; transition: all 0.3s ease; }
-.login-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(99, 102, 241, 0.35); }
-.card-footer { text-align: center; margin-top: 24px; font-size: 14px; color: #94a3b8; }
-.card-footer a { color: #818cf8; font-weight: 500; margin-left: 4px; }
+.login-btn { width: 100%; height: 46px; border-radius: 8px; font-size: 16px; font-weight: 600; background: var(--primary); color: var(--bg-main); border: none; margin-top: 8px; transition: all 0.3s ease; }
+.login-btn:hover { transform: translateY(-1px); background: var(--primary-light); box-shadow: var(--shadow-md); }
+.card-footer { text-align: center; margin-top: 24px; font-size: 14px; color: var(--text-secondary); }
+.card-footer a { color: var(--primary); font-weight: 600; margin-left: 4px; }
+.card-footer a:hover { text-decoration: underline; }
 </style>

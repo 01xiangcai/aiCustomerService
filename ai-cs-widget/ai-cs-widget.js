@@ -12,7 +12,7 @@
   const DEFAULT_CONFIG = {
     appKey: '',
     serverUrl: '',
-    themeColor: '#6366f1',
+    themeColor: '#0f172a', /* 替换为极简直男/性冷淡高级黑 */
     position: 'bottom-right',
     welcomeMsg: '你好！我是 AI 智能客服，有什么可以帮助你的？',
     placeholder: '输入你的问题...',
@@ -70,7 +70,7 @@
     const style = document.createElement('style');
     style.id = 'aics-widget-styles';
     style.textContent = `
-      /* 气泡按钮 */
+/* 气泡按钮 */
       #aics-bubble {
         position: fixed;
         ${config.position.includes('right') ? 'right: 24px' : 'left: 24px'};
@@ -78,34 +78,49 @@
         width: ${config.bubbleSize}px;
         height: ${config.bubbleSize}px;
         border-radius: 50%;
-        background: linear-gradient(135deg, ${config.themeColor}, ${adjustColor(config.themeColor, 30)});
+        background: ${config.themeColor};
         color: white;
         border: none;
         cursor: pointer;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15), 0 0 0 0 ${config.themeColor}40;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 999998;
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        animation: aics-pulse 2.5s ease-in-out infinite;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       }
       #aics-bubble:hover {
-        transform: scale(1.08);
-        box-shadow: 0 6px 28px rgba(0, 0, 0, 0.2);
-        animation: none;
+        transform: scale(1.05) translateY(-2px);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
       }
-      #aics-bubble svg {
-        width: 26px;
-        height: 26px;
-        transition: transform 0.3s ease;
+#aics-bubble svg {
+        width: 24px;
+        height: 24px;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       }
       #aics-bubble.open svg {
-        transform: rotate(90deg);
+        transform: rotate(90deg) scale(0);
+        opacity: 0;
       }
-      @keyframes aics-pulse {
-        0%, 100% { box-shadow: 0 4px 20px rgba(0,0,0,0.15), 0 0 0 0 ${config.themeColor}30; }
-        50% { box-shadow: 0 4px 20px rgba(0,0,0,0.15), 0 0 0 8px ${config.themeColor}00; }
+      #aics-bubble.open::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 2px;
+        background: white;
+        border-radius: 2px;
+        transform: rotate(45deg);
+        transition: all 0.3s;
+      }
+      #aics-bubble.open::before {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 2px;
+        background: white;
+        border-radius: 2px;
+        transform: rotate(-45deg);
+        transition: all 0.3s;
       }
 
       /* 对话窗口 */
@@ -115,17 +130,17 @@
         ${config.position.includes('bottom') ? 'bottom: 96px' : 'top: 96px'};
         width: ${config.width}px;
         height: ${config.height}px;
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.03);
         display: flex;
         flex-direction: column;
         overflow: hidden;
         z-index: 999999;
         opacity: 0;
-        transform: translateY(20px) scale(0.95);
+        transform: translateY(12px) scale(0.98);
         pointer-events: none;
-        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       }
       #aics-chat.open {
@@ -136,30 +151,32 @@
 
       /* 头部 */
       .aics-header {
-        background: linear-gradient(135deg, ${config.themeColor}, ${adjustColor(config.themeColor, 25)});
+        background: ${config.themeColor};
         color: white;
-        padding: 18px 20px;
+        padding: 16px 20px;
         display: flex;
         align-items: center;
         gap: 12px;
       }
       .aics-header-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.2);
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.15);
         display: flex;
         align-items: center;
         justify-content: center;
       }
+      .aics-header-icon svg { width: 18px; height: 18px; }
       .aics-header-title {
-        font-size: 16px;
-        font-weight: 600;
+        font-size: 15px;
+        font-weight: 500;
         letter-spacing: -0.01em;
       }
       .aics-header-status {
         font-size: 12px;
-        opacity: 0.8;
+        opacity: 0.7;
+        font-weight: 400;
       }
 
       /* 消息区 */
