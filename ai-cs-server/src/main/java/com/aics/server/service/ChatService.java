@@ -147,10 +147,11 @@ public class ChatService {
                             fullReply.toString(), "model");
                     updateSessionActivity(session);
                 })
-                .doOnError(e -> {
+                .onErrorResume(e -> {
                     log.error("流式对话异常", e);
-                    saveMessage(session.getId(), app.getId(), "assistant",
-                            app.getFallbackMsg(), "fallback");
+                    String errorDisplay = "抱歉，大模型接口调用出错：" + e.getMessage();
+                    saveMessage(session.getId(), app.getId(), "assistant", errorDisplay, "fallback");
+                    return Flux.just("\n\n" + errorDisplay);
                 });
     }
 
@@ -187,7 +188,7 @@ public class ChatService {
                 app.getWelcomeMsg() != null ? "产品介绍: " + app.getWelcomeMsg() : "");
 
         // RAG 知识库检索：根据用户问题检索相关文档分块
-        List<String> ragResults = vectorStoreService.searchSimilar(app.getId(), userContent, 3, 0.7);
+        List<String> ragResults = vectorStoreService.searchSimilar(app.getId(), userContent, 3, 0.5);
         if (!ragResults.isEmpty()) {
             String ragContext = String.join("\n\n", ragResults);
             systemPrompt += String.format(RAG_CONTEXT_TEMPLATE, ragContext);

@@ -55,14 +55,42 @@
       localStorage.setItem(storageKey, sessionId);
     }
 
-    // 注入样式和 DOM
-    injectStyles();
-    createWidget();
+    // 动态拉取后端应用配置
+    fetch(`${config.serverUrl}/open/chat/${config.appKey}/info`)
+      .then(res => res.json())
+      .then(result => {
+        if (result.data) {
+          if (result.data.appName) config.title = result.data.appName;
+          if (result.data.welcomeMsg) config.welcomeMsg = result.data.welcomeMsg;
+          if (result.data.themeColor) config.themeColor = result.data.themeColor;
+        }
+        finishInit();
+      })
+      .catch(err => {
+        console.error('[AiCS] 获取应用配置失败，将降级使用默认配置', err);
+        finishInit();
+      });
 
-    // 从后端加载历史消息，没有历史则显示欢迎语
-    loadHistory();
+    function finishInit() {
+      // 注入样式和 DOM
+      injectStyles();
+      createWidget();
 
-    console.log('[AiCS] Widget 初始化完成，sessionId=' + sessionId);
+      // 从后端加载历史消息，没有历史则显示欢迎语
+      loadHistory();
+
+      // 动态加载 marked.js 用于渲染 Markdown
+      if (!window.marked) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+        script.onload = () => {
+          renderMessages(); // 加载完后重新渲染一遍把源码转为 HTML
+        };
+        document.head.appendChild(script);
+      }
+
+      console.log('[AiCS] Widget 初始化完成，sessionId=' + sessionId);
+    }
   }
 
   // ==================== 注入样式 ====================
@@ -149,6 +177,14 @@
         pointer-events: auto;
       }
 
+      #aics-chat.expanded {
+        width: Min(860px, 90vw) !important;
+        height: Min(800px, 85vh) !important;
+        bottom: 24px !important;
+        right: 24px !important;
+        border-radius: 16px;
+      }
+
       /* 头部 */
       .aics-header {
         background: ${config.themeColor};
@@ -223,10 +259,75 @@
       }
       .aics-msg.assistant .aics-msg-bubble {
         background: white;
-        color: #1e293b;
+        color: #334155;
         border: 1px solid #e2e8f0;
         border-bottom-left-radius: 4px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        padding: 12px 16px;
+      }
+      
+      /* Markdown 内容样式覆盖 */
+      .aics-msg-bubble p { margin: 0 0 6px 0; }
+      .aics-msg-bubble p:last-child { margin: 0; }
+      .aics-msg-bubble h1, .aics-msg-bubble h2, .aics-msg-bubble h3 {
+        margin: 12px 0 6px 0;
+        font-weight: 600;
+        color: #0f172a;
+        line-height: 1.4;
+      }
+      .aics-msg-bubble h3 { font-size: 15px; }
+      .aics-msg-bubble h4 { font-size: 14px; margin: 10px 0 4px 0; color: #1e293b; }
+      .aics-msg-bubble ul, .aics-msg-bubble ol {
+        margin: 4px 0 8px 0;
+        padding-left: 20px;
+      }
+      .aics-msg-bubble li { margin-bottom: 4px; }
+      .aics-msg-bubble strong { font-weight: 600; color: #0f172a; }
+      .aics-msg-bubble blockquote {
+        margin: 8px 0;
+        padding-left: 10px;
+        border-left: 3px solid #cbd5e1;
+        color: #64748b;
+        background: #f8fafc;
+      }
+      .aics-msg-bubble code {
+        background: #f1f5f9;
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 13px;
+        color: #db2777;
+      }
+      .aics-msg-bubble pre {
+        background: #1e293b;
+        color: #f8fafc;
+        padding: 12px;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 8px 0;
+      }
+      .aics-msg-bubble pre code {
+        background: transparent;
+        color: inherit;
+        padding: 0;
+      }
+      .aics-msg-bubble table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0;
+        font-size: 13px;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .aics-msg-bubble th, .aics-msg-bubble td {
+        border: 1px solid #e2e8f0;
+        padding: 6px 10px;
+        text-align: left;
+      }
+      .aics-msg-bubble th {
+        background: #f1f5f9;
+        font-weight: 600;
+        color: #0f172a;
       }
       @keyframes aics-fadeIn {
         from { opacity: 0; transform: translateY(8px); }
@@ -344,6 +445,18 @@
           <div class="aics-header-title">${config.title}</div>
           <div class="aics-header-status">● 在线</div>
         </div>
+        <div style="margin-left:auto; display:flex; gap:14px; align-items:center;">
+          <button id="aics-reset-btn" style="background:none;border:none;color:white;cursor:pointer;opacity:0.8;transition:all 0.2s;display:flex;" title="新建干净会话">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" class="aics-reset-icon" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+          <button id="aics-expand-btn" style="background:none;border:none;color:white;cursor:pointer;opacity:0.8;transition:all 0.2s;display:flex;" title="放大/还原">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" class="aics-expand-icon" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+            </svg>
+          </button>
+        </div>
       </div>
       <div class="aics-messages" id="aics-messages"></div>
       <div class="aics-input-area">
@@ -358,6 +471,39 @@
 
     // 绑定事件
     document.getElementById('aics-send').onclick = sendMessage;
+    
+    // 新建会话事件
+    const resetBtn = document.getElementById('aics-reset-btn');
+    if (resetBtn) {
+      resetBtn.onmouseenter = () => resetBtn.style.opacity = '1';
+      resetBtn.onmouseleave = () => resetBtn.style.opacity = '0.8';
+      resetBtn.onclick = function() {
+        if (confirm('是否结束当前对话并开启全新会话？')) {
+          const storageKey = 'aics_session_' + config.appKey;
+          localStorage.removeItem(storageKey);
+          sessionId = 'ws_' + Math.random().toString(36).substring(2, 15);
+          localStorage.setItem(storageKey, sessionId);
+          
+          messages = config.welcomeMsg ? [{ role: 'assistant', content: config.welcomeMsg }] : [];
+          renderMessages();
+        }
+      };
+    }
+    
+    // 放大/还原事件
+    const expandBtn = document.getElementById('aics-expand-btn');
+    if (expandBtn) {
+      expandBtn.onmouseenter = () => expandBtn.style.opacity = '1';
+      expandBtn.onmouseleave = () => expandBtn.style.opacity = '0.8';
+      expandBtn.onclick = function() {
+        chat.classList.toggle('expanded');
+        const isExp = chat.classList.contains('expanded');
+        expandBtn.innerHTML = isExp 
+          ? `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3h-3m18 0v-3h-3m0 18v-3h3m-18 0v3h3"></path></svg>`
+          : `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>`;
+      };
+    }
+
     document.getElementById('aics-input').addEventListener('keydown', function (e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -379,7 +525,7 @@
   async function loadHistory() {
     try {
       const res = await fetch(
-        `${config.serverUrl}/open/chat/${config.appKey}/history?sessionId=${encodeURIComponent(sessionId)}&limit=50`
+        `${config.serverUrl}/open/chat/${config.appKey}/history?sessionId=${encodeURIComponent(sessionId)}&limit=30`
       );
       const result = await res.json();
       if (result.data && result.data.length > 0) {
@@ -463,11 +609,28 @@
     const container = document.getElementById('aics-messages');
     if (!container) return;
 
-    container.innerHTML = messages.map(msg => `
-      <div class="aics-msg ${msg.role}">
-        <div class="aics-msg-bubble">${escapeHtml(msg.content)}</div>
-      </div>
-    `).join('');
+    let html = '';
+    for (let msg of messages) {
+      // 用户信息转义，助理信息如果 marked 可用则渲染 Markdown
+      let contentHtml = '';
+      if (msg.role === 'user') {
+        contentHtml = escapeHtml(msg.content);
+      } else {
+        if (window.marked) {
+          // marked 解析会自带 p 标签包裹
+          contentHtml = window.marked.parse(msg.content);
+        } else {
+          contentHtml = escapeHtml(msg.content);
+        }
+      }
+      
+      html += `
+        <div class="aics-msg ${msg.role}">
+          <div class="aics-msg-bubble">${contentHtml}</div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
 
     // 滚动到底部
     requestAnimationFrame(() => {

@@ -218,7 +218,8 @@ public class KnowledgeService {
      */
     private String saveFile(MultipartFile file, Long appId) {
         try {
-            Path dirPath = Paths.get(uploadDir, String.valueOf(appId));
+            // 解决 Spring Boot MultipartFile 使用相对路径保存时，会默认拼在 Tomcat 临时目录下导致报错的问题
+            Path dirPath = Paths.get(uploadDir, String.valueOf(appId)).normalize().toAbsolutePath();
             Files.createDirectories(dirPath);
 
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();

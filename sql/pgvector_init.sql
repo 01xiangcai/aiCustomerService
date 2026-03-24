@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS acs_document_chunk (
     app_id BIGINT NOT NULL,
     chunk_index INT NOT NULL DEFAULT 0,
     content TEXT NOT NULL,
-    embedding vector(1536),  -- OpenAI/DeepSeek 默认 1536 维
+    embedding vector(1024),  -- 适配使用 BAAI/bge-large-zh-v1.5 模型时的 1024 维输出
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

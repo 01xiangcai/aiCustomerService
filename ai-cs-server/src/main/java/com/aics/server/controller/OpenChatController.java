@@ -22,6 +22,20 @@ import java.util.List;
 public class OpenChatController {
 
     private final ChatService chatService;
+    private final com.aics.server.service.AppService appService;
+
+    /**
+     * 获取机器人基础配置信息（供 Widget 初始化使用）
+     */
+    @GetMapping("/{appKey}/info")
+    public R<com.aics.common.entity.App> getAppInfo(@PathVariable("appKey") String appKey) {
+        com.aics.common.entity.App app = appService.getAppByKey(appKey);
+        // 清理掉敏感信息，仅保留前端配置需要的字段
+        app.setAppSecret(null);
+        app.setTenantId(null);
+        app.setId(null);
+        return R.ok(app);
+    }
 
     /**
      * 普通对话（非流式）

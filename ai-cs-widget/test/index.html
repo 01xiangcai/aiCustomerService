@@ -73,14 +73,13 @@
         </div>
     </div>
 
-    <!-- 嵌入 Widget：就这两行代码 -->
-    <script src="../ai-cs-widget.js"></script>
+    <!-- 嵌入 Widget：通过加防缓存后缀强制加载最新代码 -->
+    <script src="../ai-cs-widget.js?v=2"></script>
     <script>
         AiCS.init({
             appKey: 'ak_demo_test_key',
             serverUrl: 'http://localhost:9900',
-            themeColor: '#6366f1',
-            title: 'AI 智能客服',
+            title: 'AI 客服助手',
             welcomeMsg: '你好！我是 AI 客服助手，有什么可以帮您的？'
         });
     </script>

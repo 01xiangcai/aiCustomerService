@@ -72,7 +72,12 @@ public class VectorStoreService {
                     """;
 
             return pgJdbcTemplate.query(sql,
-                    (rs, rowNum) -> rs.getString("content"),
+                    (rs, rowNum) -> {
+                        String content = rs.getString("content");
+                        double similarity = rs.getDouble("similarity");
+                        log.info("RAG 命中片段 (similarity: {}): {}", similarity, content.length() > 50 ? content.substring(0, 50) + "..." : content);
+                        return content;
+                    },
                     vectorStr, appId, vectorStr, threshold, vectorStr, topK);
         } catch (Exception e) {
             log.error("向量检索失败", e);

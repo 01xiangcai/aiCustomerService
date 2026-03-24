@@ -50,6 +50,14 @@ public class SecurityConfig {
                         .requestMatchers("/widget/**").permitAll()
                         // 其余接口需要认证
                         .anyRequest().authenticated())
+                // 异常处理：未认证时统一返回 401 JSON，以便前端拦截器完成自动退出登录
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setStatus(401);
+                            response.getWriter().write("{\"code\": 401, \"msg\": \"登录已失效，请重新登录\"}");
+                        })
+                )
                 // JWT 过滤器
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
