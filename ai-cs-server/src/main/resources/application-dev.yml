@@ -1,0 +1,24 @@
+spring:
+  # MySQL 开发环境
+  datasource:
+    url: jdbc:mysql://localhost:3306/ai_customer_service?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+
+  # Redis 开发环境
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+
+# MyBatis Plus 开发日志
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# PGVector 开发环境
+pgvector:
+  url: jdbc:postgresql://localhost:5432/ai_customer_service
+  username: postgres
+  password: Yaoyuelong123.

@@ -44,7 +44,7 @@ public class SecurityConfig {
                 // 路由权限
                 .authorizeHttpRequests(auth -> auth
                         // 公开接口：认证、对话（供 Starter/Widget 调用）
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/error").permitAll()
                         .requestMatchers("/open/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/widget/**").permitAll()

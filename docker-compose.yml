@@ -7,10 +7,10 @@ services:
     container_name: aics-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: ai_cs
+      MYSQL_ROOT_PASSWORD: yaoyuelong123.,
+      MYSQL_DATABASE: ai_customer_service
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - ./docker/mysql/data:/var/lib/mysql
 
@@ -19,7 +19,7 @@ services:
     image: redis:7-alpine
     container_name: aics-redis
     restart: always
-    command: redis-server --requirepass 123456
+    command: redis-server --requirepass yaoyuelong123.,
     ports:
       - "6379:6379"
     volumes:
@@ -32,7 +32,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
+      POSTGRES_PASSWORD: yaoyuelong123.,
       POSTGRES_DB: ai_customer_service
     ports:
       - "5432:5432"
